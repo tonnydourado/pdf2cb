@@ -1,0 +1,65 @@
+#!/bin/bash
+# Author: Tonny "Nerd" <tonnydourado at gmail dot com>
+# Version: 0.2
+# License: The BSD 3-Clause License <http://opensource.org/licenses/BSD-3-Clause>
+
+function usage(){
+    echo "usage: $(basename $0) [-z|-tz|-r] pdf-file [cb?-file]"
+}
+
+function help(){
+    [ "$1" ] && echo "$1"
+    usage
+    echo 
+    echo "Convert pdf files containing images to comic book files (.cb[t|z|tz|r])."
+    echo "Plain tar is the default compression format. There is no need to extension on the output file name"
+    echo "  -h	display this help and exit"
+    echo "  -z	uses zip compression"
+    echo "  -tz	uses tar.gz compression"
+    echo "  -r	uses rar compression"
+    echo "  -v display version and copyright information and exit"
+    echo
+    exit 1
+}
+
+function version(){
+    local AUTHOR=$(grep ^#\ Author "$0" | cut -d ':' -f 2)
+    local VERSION=$(grep ^#\ Version "$0" | cut -d ':' -f 2)
+    local LICENSE=$(grep ^#\ License "$0" | cut -d ':' -f 2,3)
+    echo "$(basename $0) $VERSION" | sed 's/[ ]\+/ /g'
+    echo "Copyright (c) 2011 ${AUTHOR}." | sed 's/[ ]\+/ /g'
+    echo "License: $LICENSE"  | sed 's/[ ]\+/ /g'
+    exit 1
+}
+
+# Basic parameter checking:
+[ -z "$1" ] && usage && exit 1
+[ "$1" = "-h"  ] && help
+[ "$1" = "-v"  ] && version
+
+# Setting default compression type:
+COMPRESSION_COMMAND="tar -cf" && EXT="cbt"
+
+# Checking ans setting optional compression type:
+[ "$1" = "-z"  ] && COMPRESSION_COMMAND="zip -r" && EXT="cbz" && shift
+[ "$1" = "-tz" ] && COMPRESSION_COMMAND="tar -czf" && EXT="cbtz" && shift
+[ "$1" = "-r"  ] && COMPRESSION_COMMAND="rar a" && EXT="cbr" && shift
+
+# Checking file arguments:
+
+[ "$1" ] && PDF_FILE="$1" || help "Missing file argument." 
+[ "$2" ] && CB_FILE="${2}.${EXT}" || CB_FILE="${PDF_FILE%.pdf}.${EXT}"
+
+# Preparing things:
+TMP_DIR=$(mktemp -d)
+
+# Converting pdf to images (jpeg if possible):
+pdfimages -j "$PDF_FILE" "${TMP_DIR}/${CB_FILE%.${EXT}}"
+
+# The magick of compression! Can this be considered meta-programming?
+${COMPRESSION_COMMAND} "$CB_FILE" ${TMP_DIR}/* &> /dev/null
+
+# And after the party's end ...
+rm -rf "$TMP_DIR"
+
+exit 0

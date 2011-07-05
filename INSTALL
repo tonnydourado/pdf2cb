@@ -1,0 +1,7 @@
+INSTALL INSTRUCTIONS
+
+To install this script, just copy it to same directory under your PATH.
+Usage, help, version and copyright notes are avaliable through command
+line options. Just execute:
+		$ pdf2cb
+to get some help.
