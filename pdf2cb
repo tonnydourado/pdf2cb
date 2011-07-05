@@ -50,7 +50,7 @@ COMPRESSION_COMMAND="tar -cf" && EXT="cbt"
 [ "$1" ] && PDF_FILE="$1" || help "Missing file argument." 
 [ "$2" ] && CB_FILE="${2}.${EXT}" || CB_FILE="${PDF_FILE%.pdf}.${EXT}"
 
-# Preparing things:
+# If you have to ask, you shouldn't be here:
 TMP_DIR=$(mktemp -d)
 
 # Converting pdf to images (jpeg if possible):
